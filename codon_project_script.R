@@ -1,3 +1,4 @@
+library("biomaRt")
 library('readr')
 library('data.table')
 library('dplyr')
@@ -49,14 +50,21 @@ for (i in 1:length(files)){
 
 
 ##################################################################################
+#
+#
+#.         The code used for finding codons. Needs library('biomaRt")
+#
+#
+##################################################################################
 snps <- useMart(biomart="ENSEMBL_MART_SNP", host="https://grch37.ensembl.org", 
-                path="/biomart/martservice", dataset="hsapiens_snp") 
+                path="/biomart/martservice", dataset="hsapiens_snp") #reference database used 
 
 listFilters(snps)
 listAttributes(snps)
+#attributes is the data given back. filters is the type of data we are giving to them. 
 test <- getBM(attributes = c("snp", "allele", "reg_allele_string", "refsnp_id"),
       filters = c("snp_filter", "upstream_flank"),
-      values = list(rsid$rsid[1:200], Upstream = 2),
+      values = list(rsid$rsid[1:200], Upstream = 2), 
       mart = snps,
       checkFilters = FALSE)
 
