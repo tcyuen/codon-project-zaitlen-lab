@@ -46,3 +46,19 @@ for (i in 1:length(files)){
   
 }
 
+
+
+##################################################################################
+snps <- useMart(biomart="ENSEMBL_MART_SNP", host="https://grch37.ensembl.org", 
+                path="/biomart/martservice", dataset="hsapiens_snp") 
+
+listFilters(snps)
+listAttributes(snps)
+test <- getBM(attributes = c("snp", "allele", "reg_allele_string", "refsnp_id"),
+      filters = c("snp_filter", "upstream_flank"),
+      values = list(rsid$rsid[1:200], Upstream = 2),
+      mart = snps,
+      checkFilters = FALSE)
+
+class(test)
+
