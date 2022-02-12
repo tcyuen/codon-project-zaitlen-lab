@@ -62,11 +62,22 @@ snps <- useMart(biomart="ENSEMBL_MART_SNP", host="https://grch37.ensembl.org",
 listFilters(snps)
 listAttributes(snps)
 #attributes is the data given back. filters is the type of data we are giving to them. 
-test <- getBM(attributes = c("snp", "allele", "reg_allele_string", "refsnp_id"),
-      filters = c("snp_filter", "upstream_flank"),
-      values = list(rsid$rsid[1:200], Upstream = 2), 
-      mart = snps,
-      checkFilters = FALSE)
+#allele_1 gives the ancestral allele
+test <- getBM(attributes = c("snp", "allele", "refsnp_id", "allele_1"),
+              filters = c("snp_filter", "upstream_flank", "downstream_flank"),
+              values = list(rsid$rsid[1:200], Upstream = 2, Downstream = 2), 
+              mart = snps,
+              checkFilters = FALSE)
 
-class(test)
+# Makes vector with the number of characters in the allele column test df
+ch_count_vec <-nchar(test$allele)
 
+# Turns vector into data frame
+count_char <-data.frame(ch_count_vec)
+
+# Combines data frames then filters rsid's with only two alleles
+test2 <-cbind(test, count_char)
+test_allele <-subset(test2, ch_count_vec == 3)
+
+#removes data with no value for ancestral allele
+filtered_alleles <- test_allele[!(!is.na(test_allele$allele_1) & test_allele$allele_1==""), ]
