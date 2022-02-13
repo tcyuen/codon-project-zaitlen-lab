@@ -81,3 +81,26 @@ test_allele <-subset(test2, ch_count_vec == 3)
 
 #removes data with no value for ancestral allele
 filtered_alleles <- test_allele[!(!is.na(test_allele$allele_1) & test_allele$allele_1==""), ]
+
+
+#funtion to subset the data
+synonymous <- function(x, pos) subset(x, variant %in% rsid$variant) 
+
+#testing only on the height_file
+df <- read_delim_chunked(height_file, DataFrameCallback$new(synonymous),
+                         delim = "\t", col_names = TRUE)
+#only keep certain categories that seem interesting
+df <- df %>% select(c("variant", "beta", "se", "tstat", "pval"))
+df <- inner_join(df, rsid, c('variant' = 'variant'))
+
+#joining the ancestral alleles back to the data
+df <- inner_join(df, filtered_alleles, c("rsid" = "refsnp_id"))
+
+#get rid of empty values
+df <- df[!(!is.na(df$beta) & df$beta=="NaN"), ]
+
+#change the type from char to numeric
+df$beta <- as.numeric(as.character(test_df$beta))
+
+#change the sign if the ref != ancestral
+df$beta <- ifelse(test_df$ref != test_df$allele_1, -test_df$beta, test_df$beta)
