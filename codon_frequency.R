@@ -1,5 +1,5 @@
 # install.packages("biomartr", dependencies = TRUE)
-
+# install.packages("r2r")
 library(biomartr)
 library(dplyr)
 library(r2r) #for hash tables
@@ -45,14 +45,15 @@ ftp_download_cds <- "_ensembl_downloads/CDS/Homo_sapiens.GRCH37.cds.all.fa.gz"
 
 ftp_cds <- read_cds(file = ftp_download_cds, obj.type = "data.table")
 
-all_equal(human_cds$seqs, ftp_cds$seqs)
-identical(human_cds$seqs, ftp_cds$seqs)
+# all_equal(human_cds$seqs, ftp_cds$seqs)
+# identical(human_cds$seqs, ftp_cds$seqs)
 
 
 c1 <- c('a', 't', 'g', 'c')
 c2 <- c('a', 't', 'g', 'c')
 c3 <- c('a', 't', 'g', 'c')
 
+#make all possible combinations of codons
 codons <- apply(expand.grid(c1,c2,c3), 1, function(x) paste0(x, collapse=""))
 
 
@@ -65,7 +66,8 @@ for (i in 1:length(ftp_cds$seqs)) {
   for (codon in 1:length(codons)) {
     #iterate through the codons and count how many times they appear in the seq
     counts <- sum(unlist(seq_split) == codons[codon])
-    codon_counts[[codons[codon]]] <- codon_counts[codons[codon]] + counts
+    #add the count to the dictionary
+    codon_counts[[codons[codon]]] <- codon_counts[[codons[codon]]] + counts
   }
 }
 
