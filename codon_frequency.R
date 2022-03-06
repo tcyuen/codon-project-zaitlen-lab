@@ -95,5 +95,6 @@ codon_usage <- codon_usage %>%
   mutate(rel_freq = round(counts/sum(counts), 2))
 
 #export the data
-write.table(codon_usage, file = "codon_frequency_table.tsv", row.names = FALSE, col.names = TRUE)
+write.table(codon_usage, file = "codon_frequency_table.tsv", row.names = FALSE, 
+            col.names = TRUE, sep = "\t")
 
