@@ -76,3 +76,24 @@ for (i in 1:length(ftp_cds$seqs)) {
 
 keys(codon_counts)
 values(codon_counts)
+
+
+
+#making the frequency table
+#make a dataframe from the codons and their counts
+codon_usage <- data.frame(codons = unlist(keys(codon_counts)), counts = unlist(values(codon_counts)))
+
+#find the amino acid for each codon and append it to the dataframe. (uses Biostrings)
+codon_usage$aa <- sapply(codon_usage$codons, function(x) GENETIC_CODE[[toupper(x)]])
+#sort the dataframe (uses mixedorder() from gtools)
+codon_usage <- codon_usage[mixedorder(codon_usage$aa),] 
+
+#calc the relative frequency of the codon for each amino acid. (uses dplyr )
+codon_usage <- codon_usage %>% 
+  group_by(aa, codons) %>%
+  summarize(counts = counts) %>%
+  mutate(rel_freq = round(counts/sum(counts), 2))
+
+#export the data
+write.table(codon_usage, file = "codon_frequency_table.tsv", row.names = FALSE, col.names = TRUE)
+
