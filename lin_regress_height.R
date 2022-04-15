@@ -23,7 +23,7 @@ combined_height_data <- combined_height_data[!(!is.na(combined_height_data$beta)
 #change the type from char to numeric
 combined_height_data$beta <- as.numeric(as.character(combined_height_data$beta))
 
-write.table(combined_height_data, file = "final_combined_height_data_height.tsv", row.names = FALSE, 
+write.table(combined_height_data, file = "final_combined_height_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
