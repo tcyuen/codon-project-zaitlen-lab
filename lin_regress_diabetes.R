@@ -23,7 +23,7 @@ combined_diabetes_data <- combined_diabetes_data[!(!is.na(combined_diabetes_data
 #change the type from char to numeric
 combined_diabetes_data$beta <- as.numeric(as.character(combined_diabetes_data$beta))
 
-write.table(combined_diabetes_data, file = "final_combined_diabetes_data_chol.tsv", row.names = FALSE, 
+write.table(combined_diabetes_data, file = "final_combined_diabetes_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
