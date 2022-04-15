@@ -23,7 +23,7 @@ combined_anxiety_data <- combined_anxiety_data[!(!is.na(combined_anxiety_data$be
 #change the type from char to numeric
 combined_anxiety_data$beta <- as.numeric(as.character(combined_anxiety_data$beta))
 
-write.table(combined_anxiety_data, file = "final_combined_anxiety_data_chol.tsv", row.names = FALSE, 
+write.table(combined_anxiety_data, file = "final_combined_anxiety_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
