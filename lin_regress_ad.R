@@ -68,6 +68,16 @@ lin_mod <- lm(betas ~ delta_codon_freqs)
 
 ggplotRegression(lin_mod)
 
+#pval <0.01
+betas <- combined_ad_data[combined_ad_data$pval < 0.01, ]$beta
+
+delta_codon_freqs <- combined_ad_data[combined_ad_data$pval < 0.01, ]$delta
+
+summary(lm(betas ~ delta_codon_freqs))
+lin_mod <- lm(betas ~ delta_codon_freqs)
+
+ggplotRegression(lin_mod)
+
 #pval <0.001
 betas <- combined_ad_data[combined_ad_data$pval < 0.001, ]$beta
 
