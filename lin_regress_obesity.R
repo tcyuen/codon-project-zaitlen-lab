@@ -23,7 +23,7 @@ combined_obesity_data <- combined_obesity_data[!(!is.na(combined_obesity_data$be
 #change the type from char to numeric
 combined_obesity_data$beta <- as.numeric(as.character(combined_obesity_data$beta))
 
-write.table(combined_obesity_data, file = "final_combined_obesity_data_chol.tsv", row.names = FALSE, 
+write.table(combined_obesity_data, file = "final_combined_obesity_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
