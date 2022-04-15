@@ -23,7 +23,7 @@ combined_wbc_data <- combined_wbc_data[!(!is.na(combined_wbc_data$beta) & combin
 #change the type from char to numeric
 combined_wbc_data$beta <- as.numeric(as.character(combined_wbc_data$beta))
 
-write.table(combined_wbc_data, file = "final_combined_wbc_data_chol.tsv", row.names = FALSE, 
+write.table(combined_wbc_data, file = "final_combined_wbc_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
