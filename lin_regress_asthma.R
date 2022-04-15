@@ -23,7 +23,7 @@ combined_asthma_data <- combined_asthma_data[!(!is.na(combined_asthma_data$beta)
 #change the type from char to numeric
 combined_asthma_data$beta <- as.numeric(as.character(combined_asthma_data$beta))
 
-write.table(combined_asthma_data, file = "final_combined_asthma_data_height.tsv", row.names = FALSE, 
+write.table(combined_asthma_data, file = "final_combined_asthma_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
