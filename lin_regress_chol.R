@@ -23,7 +23,7 @@ combined_chol_data <- combined_chol_data[!(!is.na(combined_chol_data$beta) & com
 #change the type from char to numeric
 combined_chol_data$beta <- as.numeric(as.character(combined_chol_data$beta))
 
-write.table(combined_chol_data, file = "final_combined_chol_data_chol.tsv", row.names = FALSE, 
+write.table(combined_chol_data, file = "final_combined_chol_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
