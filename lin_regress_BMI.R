@@ -23,7 +23,7 @@ combined_BMI_data <- combined_BMI_data[!(!is.na(combined_BMI_data$beta) & combin
 #change the type from char to numeric
 combined_BMI_data$beta <- as.numeric(as.character(combined_BMI_data$beta))
 
-write.table(combined_BMI_data, file = "final_combined_BMI_data_chol.tsv", row.names = FALSE, 
+write.table(combined_BMI_data, file = "final_combined_BMI_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
