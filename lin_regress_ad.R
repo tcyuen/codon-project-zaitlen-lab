@@ -23,7 +23,7 @@ combined_ad_data <- combined_ad_data[!(!is.na(combined_ad_data$beta) & combined_
 #change the type from char to numeric
 combined_ad_data$beta <- as.numeric(as.character(combined_ad_data$beta))
 
-write.table(combined_ad_data, file = "final_combined_ad_data_chol.tsv", row.names = FALSE, 
+write.table(combined_ad_data, file = "final_combined_ad_data.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
 
 
