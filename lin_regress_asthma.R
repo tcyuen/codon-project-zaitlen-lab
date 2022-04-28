@@ -15,6 +15,8 @@ df <- inner_join(df, rsid, c('variant' = 'variant'))
 #adding the ancestral allele to the data 
 delta_data <- read_delim("ancestral_and_derived_with_delta.tsv", delim = "\t", col_names = TRUE)
 
+delta_data <- delta_data[!is.na(delta_data$delta),]
+
 combined_asthma_data <- inner_join(df, delta_data, c("rsid" = "input"))
 
 #get rid of empty values
