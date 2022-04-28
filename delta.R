@@ -51,6 +51,7 @@ split_codons <- select(split_codons, -c("id", "codon_1", "codon_2"))
 
 split_codons$delta <- delta
 split_codons$delta <- as.numeric(split_codons$delta)
+split_codons <- split_codons[!is.na(split_codons$delta), ]
 
 write.table(split_codons, file = "ancestral_and_derived_with_delta.tsv",
             quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
