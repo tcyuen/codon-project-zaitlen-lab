@@ -2,17 +2,17 @@ library(readr)
 library(dplyr)
 
 #names of the files
-variant_file <- 'variants.tsv.bgz'
-height_file <- '50_irnt.gwas.imputed_v3.both_sexes.tsv.bgz'
-chol_file <- '30690_irnt.gwas.imputed_v3.both_sexes.varorder.tsv.bgz'
-bmi_file <- '21001_irnt.gwas.imputed_v3.both_sexes.tsv.bgz' #4121
-asthma_file <- '22127.gwas.imputed_v3.both_sexes.tsv.bgz'
-wbc_file <- '30000_irnt.gwas.imputed_v3.both_sexes.tsv.bgz'
-anxiety_file <- 'KRA_PSY_ANXIETY.gwas.imputed_v3.both_sexes.tsv.bgz' #10117
-depress_file <- '20544_11.gwas.imputed_v3.both_sexes.v2.tsv.bgz' #11540
-diabetes_file <- 'E4_DM1.gwas.imputed_v3.both_sexes.tsv.bgz' #9033
-obesity_file <- 'E4_OBESITY.gwas.imputed_v3.both_sexes.tsv.bgz'#9057
-ad_file <- 'AD.gwas.imputed_v3.both_sexes.tsv.bgz' #8450
+
+height_file <- 'combined_height_data.tsv'
+chol_file <- 'combined_chol_data.tsv'
+bmi_file <- 'combined_bmi_data.tsv' #4121
+asthma_file <- 'combined_asthma_data.tsv'
+wbc_file <- 'combined_wbc_data.tsv'
+anxiety_file <- 'combined_anxiety_data.tsv' #10117
+depress_file <- 'combined_depress_data.tsv' #11540
+diabetes_file <- 'combined_diabetes_data.tsv' #9033
+obesity_file <- 'combined_obesity_datatsv'#9057
+ad_file <- 'combined_alzheimers_data.tsv' #8450
 
 
 files <- c(height_file, chol_file, bmi_file, asthma_file, wbc_file, 
@@ -20,9 +20,7 @@ files <- c(height_file, chol_file, bmi_file, asthma_file, wbc_file,
 
 # read the file and filter the rsid's of interest (synonymous)
 # function used to sort the data
-f <- function(x, pos) subset(x, consequence_category == "synonymous")
-rsid <- read_delim_chunked(variant_file, DataFrameCallback$new(f),
-                           delim = "\t", col_names = TRUE) 
+
 
 delta_data <- read_delim("ancestral_and_derived_with_delta.tsv", delim = "\t", col_names = TRUE)
 
@@ -32,19 +30,19 @@ delta_data <- delta_data[!is.na(delta_data$delta),]
 table <- data.frame()
 p_vals <- c(0.05, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001)
 #function to sort the data
-synonymous <- function(x, pos) subset(x, variant %in% rsid$variant) 
+
 
 
 #for loop to handle all the files
 for (i in 1:length(files)){
-  df <- read_delim_chunked(files[i], DataFrameCallback$new(synonymous),
-                           delim = "\t", col_names = TRUE)
+  df <- read_delim(files[i], delim = "\t", col_names = TRUE)
   
-  df <- inner_join(df, rsid, c('variant' = 'variant'))
+  # combine the dataset with the delta codon freq
   combined_data <- inner_join(df, delta_data, c("rsid" = "input"))
   combined_data <- combined_data[!(!is.na(combined_data$beta) & combined_data$beta=="NaN"), ]
   combined_data$beta <- as.numeric(as.character(combined_data$beta))
   combined_data$pval <- as.numeric(as.character(combined_data$pval))
+  
   #change the sign if the ref != ancestral
   combined_data$beta <- ifelse(combined_data$ref != combined_data$ancestral_allele,
                                       -combined_data$beta, combined_data$beta)

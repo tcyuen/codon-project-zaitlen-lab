@@ -5,7 +5,7 @@ library(dplyr)
 library(purrr)
 library(magrittr)
 library(tidyr)
-library('readr')
+library(readr)
 
 # code used to practice how the things work. 
 
@@ -48,8 +48,8 @@ chunk_aa_query <- function(start,stop){
   
   ancestral_allele <- data.frame()
   for (i in 1:length(data_anc$V1)) {
-    print(i)
-    
+
+    # no ancestral allele data. 
     if (length(data_anc[[1]][[i]]$mappings[[1]]$ancestral_allele) == 0) {
       
       name <- data.frame("input" = data_anc[[1]][[i]]$name, 
@@ -92,7 +92,7 @@ chunk_cod_query <- function(start,stop){
 
 
 #run the for loop to get the codons and anc_allele from ensembl
-#might break at points, so just start the for loop at the point it stopped. 
+#might break at points, so tryCaatch should keep it going 
 #save it all to data.frame
 
 all_data <- data.frame()
@@ -120,34 +120,25 @@ for (i in seq(from = 1, to = length(rsid$rsid), by = 200)){
 #get rid of snps with more than two alleles
 all_data_filtered <- subset(all_data, nchar(allele_string) == 3)
 
+# get rid of data without anc allele info
+all_data_filtered <- all_data_filtered[!(!is.na(all_data_filtered$ancestral_allele) 
+                                         & all_data_filtered$ancestral_allele==""),]
 
 #extract codons from list
-codons <- data.frame()
-for (i in 1:length(all_data_filtered$id)) {
-  extracted <- map(all_data_filtered$transcript_consequences[i], "codons")
-  unlisted <- unlist(extracted)
-  if (length(unlisted) != 0 ) {
-    parsed <- data.frame(id = c(all_data_filtered$id[i]),codons = unlisted)
-    codons <- rbind(codons, parsed)
-  }
-}
+unnested <- unnest(all_data_filtered, transcript_consequences) %>% 
+  subset(consequence_terms == "synonymous_variant")
 
-#remove duplicate values
-no_dupe_codons <- codons[!duplicated(codons[c("id","codons")]),]
+#select the data that we need
 
-#add to existing data
-final_data <- inner_join(all_data_filtered, no_dupe_codons, c("id" = "id"))
+unnested <- unnested %>% select(input, cds_start, cds_end, transcript_id, 
+                                consequence_terms, id, ancestral_allele, codons, 
+                                amino_acids, allele_string)
 
-#remove dupes again
-final_data <- final_data[!duplicated(final_data[c("id","codons")]),]
+# change dataframe from list to vectors 
+unnested <- as.data.frame(lapply(unnested, unlist))
 
-#remove data with no ancestral allele
-final_data <- final_data[!(!is.na(final_data$ancestral_allele) & final_data$ancestral_allele==""), ]
-
-#format the data, remove the column transcript_consequences, change types
-final_data <- final_data %>% select(!c(transcript_consequences))
-final_data$input <- as.character(final_data$input)
-final_data$allele_string <- as.character((final_data$allele_string))
+#keep the smallest position of SNP 
+final_data <- unnested %>% group_by(input) %>% slice_min(cds_start, n = 1, with_ties = F)
 
 #write out the data to save it
 write.table(final_data, file = "ancestral_and_codon_from_rsid.tsv", 

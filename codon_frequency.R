@@ -1,50 +1,30 @@
-# install.packages("biomartr", dependencies = TRUE)
-# install.packages("r2r")
-library(biomartr)
+library(biomartr) # for cds
 library(dplyr)
 library(r2r) #for hash tables
 library(data.table)
-# library(hash)
-aval <- is.genome.available(db = "genbank", organism = "Homo sapiens", details = TRUE)
+library(Biostrings) # for codon to amino acid
 
-# counting_codons <- function(x){
-#   data.table(x)[, .N, keyby = x]
-# }
-# 
-# number <- strsplit(gsub("([[:alnum:]]{3})", "\\1 ", ftp_cds$seqs[1])," ",T)
-# number2 <- strsplit(gsub("([[:alnum:]]{3})", "\\1 ", ftp_cds$seqs[2])," ",T)
-# 
-# testing <- counting_codons(unlist(number))
-# testing2 <- counting_codons(unlist(number2))
-# h <- hash(codons, c(0)*length(codons))
-# h
-# h[testing$x] <- h[testing$x] + testing$N
-# h[testing2$x] <- h[testing2$x] + testing2$N
-# class(c(h[testing$x]))
-# listGenomes(db = "ensembl", type = "all", subset = NULL, details = FALSE)
-# 
-# human_cds_ensembl <- getCDS(
-#                             db = "ensembl",
-#                             organism = "Homo sapiens",
-#                             release = 75,
-#                             gunzip = FALSE,
-#                             path = file.path("_ensembl_downloads", "CDS")
-#                           )
-# 
-# another_cds_human <- getCDS(
-#                             db = "ensembl",
-#                             organism = "Homo sapiens",
-#                             release = 100,
-#                             gunzip = FALSE,
-#                             path = file.path("_ensembl_downloads", "CDS")
-#                           )
+# check what kinds of databases and genomes are available
+aval <- is.genome.available(db = "ensembl", organism = "Homo sapiens", details = TRUE)
 
-ftp_download_cds <- "_ensembl_downloads/CDS/Homo_sapiens.GRCH37.cds.all.fa.gz"
 
-#human_cds <- read_cds(file = human_cds_ensembl, obj.type = "data.table")
+human_cds_ensembl <- getCDS(
+                            db = "ensembl",
+                            organism = "Homo sapiens",
+                            release = 75, #GRCh37 build
+                            gunzip = FALSE,
+                            path = file.path("_ensembl_downloads", "CDS")
+                          )
 
-ftp_cds <- read_cds(file = ftp_download_cds, obj.type = "data.table")
 
+# this is for data downloaded directly from ensembl
+# ftp_download_cds <- "_ensembl_downloads/CDS/Homo_sapiens.GRCH37.cds.all.fa.gz"
+
+human_cds <- read_cds(file = human_cds_ensembl, obj.type = "data.table")
+
+# ftp_cds <- read_cds(file = ftp_download_cds, obj.type = "data.table")
+
+# both of the files are the same seqs.
 # all_equal(human_cds$seqs, ftp_cds$seqs)
 # identical(human_cds$seqs, ftp_cds$seqs)
 
@@ -60,9 +40,9 @@ codons <- apply(expand.grid(c1,c2,c3), 1, function(x) paste0(x, collapse=""))
 codon_counts <- hashmap(default = 0)
 
 #iterate through all of the cds_seqs
-for (i in 1:length(ftp_cds$seqs)) {
+for (i in 1:length(human_cds$seqs)) {
   #split the seq into substrings of 3
-  seq_split <- strsplit(gsub("([[:alnum:]]{3})", "\\1 ", ftp_cds$seqs[i])," ",T)
+  seq_split <- strsplit(gsub("([[:alnum:]]{3})", "\\1 ", human_cds$seqs[i])," ",T)
   for (codon in 1:length(codons)) {
     #iterate through the codons and count how many times they appear in the seq
     counts <- sum(unlist(seq_split) == codons[codon])
@@ -97,4 +77,3 @@ codon_usage <- codon_usage %>%
 #export the data
 write.table(codon_usage, file = "codon_frequency_table.tsv", row.names = FALSE, 
             col.names = TRUE, sep = "\t")
-

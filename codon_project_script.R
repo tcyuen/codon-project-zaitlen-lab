@@ -1,9 +1,5 @@
-library("biomaRt")
 library('readr')
-library('data.table')
 library('dplyr')
-
-
 
 #names of the files
 variant_file <- 'variants.tsv.bgz'
@@ -22,85 +18,63 @@ ad_file <- 'AD.gwas.imputed_v3.both_sexes.tsv.bgz' #8450
 files <- c(height_file, chol_file, bmi_file, asthma_file, wbc_file, 
            anxiety_file, depress_file, diabetes_file, obesity_file, ad_file)
 
+names <- c("height", "chol", "bmi", "asthma", "wbc", "anxiety", 
+           "depress", "diabetes", "obesity", "alzheimers")
+
 #read the file and filter the rsid's of interest (synonymous)
 #function used to sort the data
 f <- function(x, pos) subset(x, consequence_category == "synonymous")
 rsid <- read_delim_chunked(variant_file, DataFrameCallback$new(f),
                            delim = "\t", col_names = TRUE) 
 
-#only keep the variant, rsid, and consequence category 
-rsid <- rsid %>% select(c("variant", "rsid", "consequence_category"))
+#only keep the variant, rsid, raf, alt, and consequence category 
+#rsid <- rsid %>% dplyr::select(c("variant","ref","alt", "rsid", "consequence_category"))
 
 
-listofdata <- list()
+
 #function to sort the data
 synonymous <- function(x, pos) subset(x, variant %in% rsid$variant) 
 
-#for loop to handle all the files
+
+#for loop to handle combine the files
 for (i in 1:length(files)){
   df <- read_delim_chunked(files[i], DataFrameCallback$new(synonymous),
                            delim = "\t", col_names = TRUE)
   #only keep certain categories that seem interesting
-  df <- df %>% select(c("variant", "beta", "se", "tstat", "pval"))
+  # df <- df %>% select(c("variant", "beta", "se", "tstat", "pval"))
   df <- inner_join(df, rsid, c('variant' = 'variant'))
-  listofdata[[i]] <- df
   
+  write.table(df,file = paste(c("combined_", names[i], "_data.tsv"),
+                              collapse = ""), 
+              sep = "\t", col.names = T, row.names = F)
 }
 
 
 
-##################################################################################
-#
-#
-#.         The code used for finding codons. Needs library('biomaRt")
-#
-#
-##################################################################################
-snps <- useMart(biomart="ENSEMBL_MART_SNP", host="https://grch37.ensembl.org", 
-                path="/biomart/martservice", dataset="hsapiens_snp") #reference database used 
 
-listFilters(snps)
-listAttributes(snps)
-#attributes is the data given back. filters is the type of data we are giving to them. 
-#allele_1 gives the ancestral allele
-test <- getBM(attributes = c("snp", "allele", "refsnp_id", "allele_1"),
-              filters = c("snp_filter", "upstream_flank", "downstream_flank"),
-              values = list(rsid$rsid[1:200], Upstream = 2, Downstream = 2), 
-              mart = snps,
-              checkFilters = FALSE)
+# # Makes vector with the number of characters in the allele column test df
+# ch_count_vec <-nchar(test$allele)
+# 
+# # Turns vector into data frame
+# count_char <-data.frame(ch_count_vec)
+# 
+# # Combines data frames then filters rsid's with only two alleles
+# test2 <-cbind(test, count_char)
+# test_allele <-subset(test2, ch_count_vec == 3)
+# 
+# #removes data with no value for ancestral allele
+# filtered_alleles <- test_allele[!(!is.na(test_allele$allele_1) & test_allele$allele_1==""), ]
 
-# Makes vector with the number of characters in the allele column test df
-ch_count_vec <-nchar(test$allele)
-
-# Turns vector into data frame
-count_char <-data.frame(ch_count_vec)
-
-# Combines data frames then filters rsid's with only two alleles
-test2 <-cbind(test, count_char)
-test_allele <-subset(test2, ch_count_vec == 3)
-
-#removes data with no value for ancestral allele
-filtered_alleles <- test_allele[!(!is.na(test_allele$allele_1) & test_allele$allele_1==""), ]
-
-
-#funtion to subset the data
-synonymous <- function(x, pos) subset(x, variant %in% rsid$variant) 
-
-#testing only on the height_file
+#############################################################################################
+# Testing only on the height_file
 df <- read_delim_chunked(height_file, DataFrameCallback$new(synonymous),
                          delim = "\t", col_names = TRUE)
+
 #only keep certain categories that seem interesting
-df <- df %>% select(c("variant", "beta", "se", "tstat", "pval"))
+#df <- df %>% dplyr::select(c("variant", "beta", "se", "tstat", "pval"))
 df <- inner_join(df, rsid, c('variant' = 'variant'))
 
-#joining the ancestral alleles back to the data
-df <- inner_join(df, filtered_alleles, c("rsid" = "refsnp_id"))
+write.table(df, file = "test.tsv", sep = "\t", col.names = T, row.names = F)
 
-#get rid of empty values
-df <- df[!(!is.na(df$beta) & df$beta=="NaN"), ]
+checking <- read_delim("test.tsv", delim = "\t", col_names = T)
 
-#change the type from char to numeric
-df$beta <- as.numeric(as.character(test_df$beta))
-
-#change the sign if the ref != ancestral
-df$beta <- ifelse(test_df$ref != test_df$allele_1, -test_df$beta, test_df$beta)
